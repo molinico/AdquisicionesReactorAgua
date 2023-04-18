@@ -40,7 +40,9 @@ for archivo in os.listdir(carpeta):
 os.chdir (path)
 
 files=glob.glob('*.csv')
-per0=1000   #0 para primer periodo , 1000 para segundo
+files=files[:1]  #SI QUIERO ANALIZAR SOLO UNOS POCOS O UNO
+
+per0=0   #0 para primer periodo , 1000 para segundo
 
 ampV=18000 #voltaje puesto en el generador aprox
 frecusada=8000  #aprox
