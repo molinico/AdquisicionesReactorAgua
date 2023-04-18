@@ -1,0 +1,54 @@
+para primer periodo mediciones del 13-4-23
+
+1-archivo=1ppm_C 2023-04-13 14h 54m 12s.csv
+potencia= 0.006496231319306236 W
+2-archivo=1ppm_C 2023-04-13 14h 54m 25s.csv
+potencia= 0.0070910323187362385 W
+3-archivo=1ppm_C 2023-04-13 14h 54m 37s.csv
+potencia= 0.006366181354910947 W
+4-archivo=1ppm_C 2023-04-13 14h 54m 50s.csv
+potencia= 0.006197767348354534 W
+5-archivo=1ppm_C 2023-04-13 14h 55m 03s.csv
+potencia= 0.006673226349159156 W
+6-archivo=1ppm_C 2023-04-13 14h 55m 16s.csv
+potencia= 0.005958494862433663 W
+7-archivo=1ppm_C 2023-04-13 14h 55m 29s.csv
+potencia= 0.006000185513301718 W
+8-archivo=1ppm_C 2023-04-13 14h 55m 42s.csv
+potencia= 0.006350100490374264 W
+9-archivo=1ppm_C 2023-04-13 14h 55m 55s.csv
+potencia= 0.006029300467150852 W
+10-archivo=1ppm_C 2023-04-13 14h 56m 08s.csv
+potencia= 0.005946121419699651 W
+--------FINAL--------
+potencia media de todo= 0.006310864144342726 W
+maximo de potencias 0.0070910323187362385 W //numero de archivo 2
+minimo de potencias 0.005946121419699651 W //numero de archivo 10
+
+
+
+PARA SEGUNDO PERIODO
+1-archivo=1ppm_C 2023-04-13 14h 54m 12s.csv
+potencia= 0.006241455899927494 W
+2-archivo=1ppm_C 2023-04-13 14h 54m 25s.csv
+potencia= 0.006032799495320222 W
+3-archivo=1ppm_C 2023-04-13 14h 54m 37s.csv
+potencia= 0.0054714281759609 W
+4-archivo=1ppm_C 2023-04-13 14h 54m 50s.csv
+potencia= 0.006445572332297471 W
+5-archivo=1ppm_C 2023-04-13 14h 55m 03s.csv
+potencia= 0.006343307354159146 W
+6-archivo=1ppm_C 2023-04-13 14h 55m 16s.csv
+potencia= 0.005818529112875908 W
+7-archivo=1ppm_C 2023-04-13 14h 55m 29s.csv
+potencia= 0.005578207740631135 W
+8-archivo=1ppm_C 2023-04-13 14h 55m 42s.csv
+potencia= 0.0062648302451402274 W
+9-archivo=1ppm_C 2023-04-13 14h 55m 55s.csv
+potencia= 0.005898188645758805 W
+10-archivo=1ppm_C 2023-04-13 14h 56m 08s.csv
+potencia= 0.005711449433550378 W
+--------FINAL--------
+potencia media de todo= 0.005980576843562168 W
+maximo de potencias 0.006445572332297471 W //numero de archivo 4
+minimo de potencias 0.0054714281759609 W //numero de archivo 3
