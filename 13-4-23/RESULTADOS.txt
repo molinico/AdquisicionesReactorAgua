@@ -49,6 +49,6 @@ potencia= 0.005898188645758805 W
 10-archivo=1ppm_C 2023-04-13 14h 56m 08s.csv
 potencia= 0.005711449433550378 W
 --------FINAL--------
-potencia media de todo= 0.005980576843562168 W
+potencia media de todo= 0.005980576843562168 +- 0.0003376371190212468 W
 maximo de potencias 0.006445572332297471 W //numero de archivo 4
 minimo de potencias 0.0054714281759609 W //numero de archivo 3
