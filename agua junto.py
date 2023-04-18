@@ -31,6 +31,8 @@ graficoaplan=0
 graficosfinal=1
 
 
+per0=0   #0 para primer periodo , 1000 para segundo
+
 fig, (ax1, ax2) = plt.subplots(2, 1)
 
 plt.close("all")
@@ -44,9 +46,8 @@ for file in files:
     Istr=Vstr/50 *1000
     print(str(j)+"-archivo="+file)
 
-    fig, (ax1, ax2) = plt.subplots(2, 1)
-
     if graficoscrudos==1:
+        fig, (ax1, ax2) = plt.subplots(2, 1)
         # Graficar los datos en el primer subplot
         ax1.plot(t, Vdbd, color='blue', label='Vdbd')
         ax1.grid()
@@ -157,11 +158,12 @@ for file in files:
     # [500:500+longper]
 
     if graficosfinal==1:
-        #fig, (ax1, ax2) = plt.subplots(2, 1)
+        fig, (ax1, ax2) = plt.subplots(2, 1)
 
 
         # Graficar los datos en el primer subplot
-        ax1.plot(t[1000:1000+longper], Vdbd[1000:1000+longper], color='blue', label='Vdbd')
+        ax1.plot(t, Vdbd, color='grey', label='Vdbd')
+        ax1.plot(t[per0:per0+longper], Vdbd[per0:per0+longper], color='blue', label='Vdbd para P')
         ax1.grid()
         ax1.set_title("Voltaje de alimentación")
         ax1.set_xlabel('tiempos (s)')
@@ -169,7 +171,8 @@ for file in files:
         ax1.legend()
 
         # Graficar los datos en el segundo subplot
-        ax2.plot(t[1000:1000+longper], Istr_plana[1000:1000+longper], color='red', label='Istr')
+        ax2.plot(t, Istr_plana, color='grey', label='Istr')
+        ax2.plot(t[per0:per0+longper], Istr_plana[per0:per0+longper], color='red', label='Istr para P')
         ax2.grid()
         ax2.set_title("Corriente de streamers")
         ax2.set_xlabel('tiempo (s)')
@@ -179,8 +182,8 @@ for file in files:
         fig.suptitle("archivo="+file)
 
         plt.show()
-    Vpot=Vdbd[1000:1000+longper]
-    Ipot=Istr[1000:1000+longper]/1000 #paso la corriente a A
+    Vpot=Vdbd[per0:per0+longper]
+    Ipot=Istr[per0:per0+longper]/1000 #paso la corriente a A
     N=len(Ipot)
     potencia=np.mean(Vpot*Ipot/N)
     potencias.append(potencia)
