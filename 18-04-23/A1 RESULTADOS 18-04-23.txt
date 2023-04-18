@@ -1,0 +1,9 @@
+primer periodo
+potencia media de todo= 0.0011441828540173762 +- 0.00034261956562740674 W
+maximo de potencias 0.00198745205305687 W //numero de archivo 41
+minimo de potencias 0.0 W //numero de archivo 1
+
+segundo periodo
+potencia media de todo= 0.0011843112500077827 +- 0.0003254603676927295 W
+maximo de potencias 0.0018531332732345794 W //numero de archivo 29
+minimo de potencias 0.0 W //numero de archivo 1

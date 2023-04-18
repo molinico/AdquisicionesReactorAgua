@@ -8,31 +8,52 @@ import scipy.stats as stats
 import pandas as pd
 import os
 from  scipy.stats import chi2_contingency
-from statsmodels.stats.weightstats import DescrStatsW
+#from statsmodels.stats.weightstats import DescrStatsW
 import glob
 from scipy.signal import butter, filtfilt
+
+#ej de path=r'C:\Users\Sergio\Desktop\L6y7\18-04-23'
+path='C:/Users/Nicolás Molina/Desktop/L6-7/18-04-23bis'
 
 #get_ipython().run_line_magic('matplotlib', 'inline')
 get_ipython().run_line_magic('matplotlib', 'qt5')
 
 #%%
-#os.chdir (r'C:\Users\Nicolás Molina\Desktop\L6-7\13-4-23')
-os.chdir (r'C:\Users\Sergio\Desktop\L6y7\13-4-23')
+#ARREGLO LOS CSV
+carpeta = path
+
+# Iterar sobre cada archivo CSV en la carpeta
+for archivo in os.listdir(carpeta):
+    if archivo.endswith('.csv'):
+        ruta_archivo = os.path.join(carpeta, archivo)
+        # Leer el contenido del archivo
+        with open(ruta_archivo, 'r') as f:
+            contenido = f.read()
+        # Reemplazar las apariciones de ",,," por ",0,0,"
+        contenido_modificado = contenido.replace(',,,', ',0,0,')
+        # Escribir el contenido modificado en el archivo
+        with open(ruta_archivo, 'w') as f:
+            f.write(contenido_modificado)
+
+
+#%%
+os.chdir (path)
 
 files=glob.glob('*.csv')
+per0=1000   #0 para primer periodo , 1000 para segundo
 
-
+ampV=18000 #voltaje puesto en el generador aprox
 frecusada=8000  #aprox
+ 
+
 #CON 1 SE PLOTEAN LAS COSAS CON 0 NO
 graficoscrudos=0
 graficoajuste=0
 graficofiltro=0
 graficoaplan=0
-graficosfinal=1
+graficosfinal=0
 
-
-per0=0   #0 para primer periodo , 1000 para segundo
-
+############################################
 fig, (ax1, ax2) = plt.subplots(2, 1)
 
 plt.close("all")
@@ -72,11 +93,11 @@ for file in files:
         y=a*np.sin(2*np.pi/T*x)+b
         return y
 
-    init_vals=[1/frecusada,2.5,0]
+    init_vals=[1/frecusada,ampV,0]
 
 
 
-    popt, pcov = curve_fit(sin, t, Istr,absolute_sigma=True,p0=init_vals)       #,p0=init_vals
+    popt, pcov = curve_fit(sin, t, Vdbd,absolute_sigma=True,p0=init_vals)       #,p0=init_vals
     perr = np.sqrt(np.diag(pcov))
 
     valorT= popt[0]
@@ -98,8 +119,8 @@ for file in files:
     if graficoajuste==1:
         plt.figure()
         plt.grid()
-        plt.title("Corriente de streamers")
-        plt.plot(t,Istr,label="datos crudos")
+        plt.title("Tensión de entrada")
+        plt.plot(t,Vdbd,label="datos crudos")
         plt.plot(bins,ajuste,label="ajuste seno")
         plt.xlabel("tiempo (s)")
         plt.ylabel("I (mA)")
@@ -183,19 +204,25 @@ for file in files:
 
         plt.show()
     Vpot=Vdbd[per0:per0+longper]
-    Ipot=Istr[per0:per0+longper]/1000 #paso la corriente a A
+    Ipot=Istr_plana[per0:per0+longper]/1000 #paso la corriente a A
     N=len(Ipot)
     potencia=np.mean(Vpot*Ipot/N)
     potencias.append(potencia)
     print("potencia=",potencia, "W")
     j=j+1
     
-    
-    
 
+    
+    
+desviacion_estandar = stats.tstd(potencias)
 
 print("--------FINAL--------")
+if per0==1000:
+    print("segundo periodo")
+else:
+    print("primer periodo")
 #print("array potencias=",potencias)
-print("potencia media de todo=",np.mean(potencias),"W")
+print("potencia media de todo=",np.mean(potencias),"+-",desviacion_estandar,"W")
+#print("desviaciòn estandar",desviacion_estandar)
 print("maximo de potencias",max(potencias),"W","//numero de archivo",potencias.index(max(potencias))+1)
 print("minimo de potencias",min(potencias),"W","//numero de archivo",potencias.index(min(potencias))+1)
