@@ -40,6 +40,7 @@ for archivo in os.listdir(carpeta):
 os.chdir (path)
 
 files=glob.glob('*.csv')
+
 files=files[:1]  #SI QUIERO ANALIZAR SOLO UNOS POCOS O UNO
 
 per0=0   #0 para primer periodo , 1000 para segundo
@@ -49,11 +50,11 @@ frecusada=8000  #aprox
  
 
 #CON 1 SE PLOTEAN LAS COSAS CON 0 NO
-graficoscrudos=0
-graficoajuste=0
-graficofiltro=0
-graficoaplan=0
-graficosfinal=0
+graficoscrudos=1
+graficoajuste=1
+graficofiltro=1
+graficoaplan=1
+graficosfinal=1
 
 ############################################
 fig, (ax1, ax2) = plt.subplots(2, 1)
@@ -121,7 +122,7 @@ for file in files:
     if graficoajuste==1:
         plt.figure()
         plt.grid()
-        plt.title("Tensión de entrada")
+        plt.title("Tensión de entrada"+file)
         plt.plot(t,Vdbd,label="datos crudos")
         plt.plot(bins,ajuste,label="ajuste seno")
         plt.xlabel("tiempo (s)")
@@ -150,7 +151,7 @@ for file in files:
         # Graficar la señal original y la señal filtrada
         plt.figure()
         plt.grid()
-        plt.title("Aplanamiento de señal")
+        plt.title("Aplanamiento de señal"+file)
         plt.plot(t, signal, label='Señal original')
         plt.plot(t, filtered_signal, label='Señal filtrada')
         plt.xlabel("tiempo (s)")
@@ -168,7 +169,7 @@ for file in files:
     if graficoaplan==1:
         plt.figure()
         plt.grid()
-        plt.title("Aplanamiento total de señal")
+        plt.title("Aplanamiento total de señal"+file)
         plt.plot(t, Istr_plana, label='Señal filtrada')
         plt.xlabel("tiempo (s)")
         plt.ylabel("I [mA]")
@@ -228,3 +229,4 @@ print("potencia media de todo=",np.mean(potencias),"+-",desviacion_estandar,"W")
 #print("desviaciòn estandar",desviacion_estandar)
 print("maximo de potencias",max(potencias),"W","//numero de archivo",potencias.index(max(potencias))+1)
 print("minimo de potencias",min(potencias),"W","//numero de archivo",potencias.index(min(potencias))+1)
+
