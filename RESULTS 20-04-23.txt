@@ -1,0 +1,5 @@
+potencia media de todo= 1.6389837125877782 +- 0.3973328150501055 W
+maximo en primer periodo
+maximo de potencias 2.6201372384554373 W //numero de archivo 19
+minimo en primer periodo
+minimo de potencias 1.0187902096573556 W //numero de archivo 28
