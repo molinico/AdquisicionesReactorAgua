@@ -41,25 +41,41 @@ os.chdir (path)
 
 files=glob.glob('*.csv')
 
-files=files[:1]  #SI QUIERO ANALIZAR SOLO UNOS POCOS O UNO
+n_archivo=30
 
-per0=0   #0 para primer periodo , 1000 para segundo
+
+#files=files[n_archivo-1:n_archivo]  #SI QUIERO ANALIZAR SOLO UNOS POCOS O UNO
+   
 
 ampV=18000 #voltaje puesto en el generador aprox
+ampI=3/1000
 frecusada=8000  #aprox
  
 
 #CON 1 SE PLOTEAN LAS COSAS CON 0 NO
-graficoscrudos=1
+
+graficoscrudos=0
 graficoajuste=1
 graficofiltro=1
 graficoaplan=1
 graficosfinal=1
 
+if len(files) > 1:
+    graficoscrudos=0
+    graficoajuste=0
+    graficofiltro=0
+    graficoaplan=0
+    graficosfinal=0
+
 ############################################
 fig, (ax1, ax2) = plt.subplots(2, 1)
 
 plt.close("all")
+
+
+pers=[0,1000]   #0 para primer periodo , 1000 para segundo
+
+
 potencias=[]
 j=1
 for file in files:
@@ -67,24 +83,24 @@ for file in files:
     t=med[3]
     Vdbd=med[4]
     Vstr=med[8]
-    Istr=Vstr/50 *1000
-    print(str(j)+"-archivo="+file)
+    Istr=Vstr/50
+    #print(str(j)+"-archivo="+file)
 
     if graficoscrudos==1:
         fig, (ax1, ax2) = plt.subplots(2, 1)
         # Graficar los datos en el primer subplot
-        ax1.plot(t, Vdbd, color='blue', label='Vdbd')
+        ax1.plot(t*1000, Vdbd/1000, color='blue', label='$V_{dbd}$')
         ax1.grid()
         ax1.set_title("Voltaje de alimentación")
-        ax1.set_xlabel('tiempos (s)')
-        ax1.set_ylabel('V')
+        ax1.set_xlabel('tiempos [ms]')
+        ax1.set_ylabel('V [kV]')
         ax1.legend()
 
         # Graficar los datos en el segundo subplot
-        ax2.plot(t, Istr, color='red', label='Istr')
+        ax2.plot(t*1000, Istr*1000, color='red', label='$I_{str}$')
         ax2.grid()
         ax2.set_title("Corriente de streamers")
-        ax2.set_xlabel('tiempo (s)')
+        ax2.set_xlabel('tiempo [ms]')
         ax2.set_ylabel('I [mA]')
         ax2.legend()
 
@@ -107,59 +123,97 @@ for file in files:
     valora=popt[1]
     valorb=popt[2]
     err_T = perr[0]
-    #print("periodo=",valorT)
-    #print("frecuencia=",1/valorT)
-    #print("len",len(t))
-    #print("tiempo capturado en pantalla=",t[-1]-t[0])
-    longper=valorT*10000000
-    longper=round(longper)
-    #print(longper)
 
-    #print("valores inversa",valora1,valorb1)
+
+    popt, pcov = curve_fit(sin, t, Istr,absolute_sigma=True,p0=init_vals)       #,p0=init_vals
+    perr = np.sqrt(np.diag(pcov))
+
+    
+    valorbIstr=popt[2]
+    
+
     bins=np.linspace(t[0],t[-1],len(t))
 
     ajuste= sin(bins,valorT,valora,valorb)
+    """
     if graficoajuste==1:
         plt.figure()
         plt.grid()
         plt.title("Tensión de entrada"+file)
-        plt.plot(t,Vdbd,label="datos crudos")
-        plt.plot(bins,ajuste,label="ajuste seno")
-        plt.xlabel("tiempo (s)")
-        plt.ylabel("I (mA)")
+        plt.plot(t*1000,Vdbd/1000,label="Datos crudos V")
+        plt.plot(bins*1000,ajuste/1000,label="Ajuste seno")
+        plt.xlabel("tiempo [ms]")
+        plt.ylabel("V [kV]")
         plt.legend()
-
+    
     frecuencia=1/valorT
-
+    """
 
     signal=Istr
+    from scipy.signal import savgol_filter
 
-    # Definir la frecuencia de corte del filtro
-    cutoff = 100
+    window_length = 201
+    polyorder = 3
+    seno_filtrado = savgol_filter(Istr, window_length, polyorder)
 
-    # Crear el filtro Butterworth de orden elevado
-    order = 5
-    nyquist = 0.5 * frecuencia
-    normal_cutoff = cutoff / nyquist
-    b, a = butter(order, normal_cutoff, btype='high')
 
-    # Aplicar el filtro a la señal
-    filtered_signal = filtfilt(b, a, signal)
+    def sin2(x,T,a,b):
+        y=a*np.sin(2*np.pi/T*x+b)+valorbIstr
+        return y
 
-    Istr_plana=filtered_signal
+    init_valsIstr=[1/frecusada,ampI,0]
+    popt, pcov = curve_fit(sin2, t, seno_filtrado,absolute_sigma=True,p0=init_valsIstr)       #,p0=init_valsIstr
+    perr = np.sqrt(np.diag(pcov))
+
+    valorTf= popt[0]
+    valoraf=popt[1]
+    valorbf=popt[2]
+    err_Tf = perr[0]
+
+    Istr_ajuste=sin2(bins,valorTf,valoraf,valorbf)
+
+    Istr_plana=Istr-Istr_ajuste
+
+    longper=valorTf*10000000
+    longper=round(longper)
+    
+
+    #Istr_plana=filtered_signal
     if graficofiltro==1:
+
+        plt.figure()
+        plt.title("savgol")
+        plt.plot(t*1000, Istr*1000, label='Señal original')
+        plt.plot(t*1000, seno_filtrado*1000, label='Señal filtrada')
+        plt.xlabel('Tiempo [ms]')
+        plt.ylabel('Amplitud(mA)')
+        plt.grid(True)
+        plt.legend(loc='best')
+        plt.show()
+
+        plt.figure()
+        plt.grid()
+        plt.title("Savgol + ajuste")
+        plt.plot(t*1000,seno_filtrado*1000,label="Solo filtro")
+        plt.plot(t*1000,Istr_ajuste*1000,label="Ajuste al filtro")
+        plt.xlabel('Tiempo [ms]')
+        plt.ylabel('Amplitud(mA)')
+        plt.grid(True)
+        plt.legend(loc='best')
+        plt.show()
+
         # Graficar la señal original y la señal filtrada
         plt.figure()
         plt.grid()
         plt.title("Aplanamiento de señal"+file)
-        plt.plot(t, signal, label='Señal original')
-        plt.plot(t, filtered_signal, label='Señal filtrada')
-        plt.xlabel("tiempo (s)")
+        plt.plot(t*1000, signal*1000, label='Señal original')
+        plt.plot(t*1000, Istr_plana*1000, label='Señal filtrada')
+        plt.xlabel("tiempo [ms]")
         plt.ylabel("I [mA]")
         plt.legend()
         plt.show()
 
-    p = 1 #valor umbral
+    p = 0.001 #valor umbral
 
     # Recorrer la lista y actualizar los valores menores a 'p' a cero
     for i in range(len(Istr_plana)):
@@ -170,63 +224,80 @@ for file in files:
         plt.figure()
         plt.grid()
         plt.title("Aplanamiento total de señal"+file)
-        plt.plot(t, Istr_plana, label='Señal filtrada')
-        plt.xlabel("tiempo (s)")
+        plt.plot(t*1000, Istr_plana*1000, label='Señal filtrada')
+        plt.xlabel("tiempo [ms]")
         plt.ylabel("I [mA]")
         plt.legend()
         plt.show()
 
-    #os.chdir (r'C:\Users\Sergio\Desktop\labo5\difractiva\codigos\espectroscopia')
-    #os.chdir (r'C:\Users\Nicolás Molina\Desktop\L6-7\13-4-23')
-    #el len de los archivos es 2489
-    # [500:500+longper]
 
-    if graficosfinal==1:
-        fig, (ax1, ax2) = plt.subplots(2, 1)
+    for per0 in pers:
+        if graficosfinal==1:
+            fig, (ax1, ax2) = plt.subplots(2, 1)
 
 
-        # Graficar los datos en el primer subplot
-        ax1.plot(t, Vdbd, color='grey', label='Vdbd')
-        ax1.plot(t[per0:per0+longper], Vdbd[per0:per0+longper], color='blue', label='Vdbd para P')
-        ax1.grid()
-        ax1.set_title("Voltaje de alimentación")
-        ax1.set_xlabel('tiempos (s)')
-        ax1.set_ylabel('V')
-        ax1.legend()
+            # Graficar los datos en el primer subplot
+            ax1.plot(t*1000, Vdbd/1000, color='grey', label='$V_{dbd}$')
+            ax1.plot(t[per0:per0+longper]*1000, Vdbd[per0:per0+longper]/1000, color='blue', label='$V_{dbd}$ para P')
+            ax1.grid()
+            ax1.set_title("Voltaje de alimentación")
+            ax1.set_xlabel('tiempos [ms]')
+            ax1.set_ylabel('V [kV]')
+            ax1.legend()
 
-        # Graficar los datos en el segundo subplot
-        ax2.plot(t, Istr_plana, color='grey', label='Istr')
-        ax2.plot(t[per0:per0+longper], Istr_plana[per0:per0+longper], color='red', label='Istr para P')
-        ax2.grid()
-        ax2.set_title("Corriente de streamers")
-        ax2.set_xlabel('tiempo (s)')
-        ax2.set_ylabel('I [mA]')
-        ax2.legend()
+            # Graficar los datos en el segundo subplot
+            ax2.plot(t*1000, Istr_plana*1000, color='grey', label='$I_{str}$')
+            ax2.plot(t[per0:per0+longper]*1000, Istr_plana[per0:per0+longper]*1000, color='red', label='$I_{str}$ para P')
+            ax2.grid()
+            ax2.set_title("Corriente de streamers")
+            ax2.set_xlabel('tiempo [ms]')
+            ax2.set_ylabel('I [mA]')
+            ax2.legend()
 
-        fig.suptitle("archivo="+file)
+            fig.suptitle("archivo="+file+"/periodo="+str(per0))
 
-        plt.show()
-    Vpot=Vdbd[per0:per0+longper]
-    Ipot=Istr_plana[per0:per0+longper]/1000 #paso la corriente a A
-    N=len(Ipot)
-    potencia=np.mean(Vpot*Ipot/N)
-    potencias.append(potencia)
-    print("potencia=",potencia, "W")
-    j=j+1
-    
+            plt.show()
 
-    
-    
+        
+        Vpot=Vdbd[per0:per0+longper]
+        Ipot=Istr_plana[per0:per0+longper] #paso la corriente a A
+        N=len(Ipot)
+        potencia=np.mean(Vpot*Ipot)
+        potencias.append(potencia)
+        #print("potencia=",potencia, "W")
+        j=j+1
+        
+
+        
+        
 desviacion_estandar = stats.tstd(potencias)
+    
+def numarchmax(x):
+    num=potencias.index(max(x))+1
+    if num % 2 == 0:
+        print("maximo en segundo periodo")
+        return num/2 
+    else:
+        print("maximo en primer periodo")
+        return (num-1)/2
+    
+def numarchmin(x):
+    num=potencias.index(min(x))+1
+    if num % 2 == 0:
+        print("minimo en segundo periodo")
+        return num/2
+    else:
+        print("minimo en primer periodo")
+        return (num-1)/2
+    
+print(path)
+if len(files)> 5:
+    print("cantidad de archivos=",len(files))
+    print("-------")
 
-print("--------FINAL--------")
-if per0==1000:
-    print("segundo periodo")
-else:
-    print("primer periodo")
-#print("array potencias=",potencias)
-print("potencia media de todo=",np.mean(potencias),"+-",desviacion_estandar,"W")
-#print("desviaciòn estandar",desviacion_estandar)
-print("maximo de potencias",max(potencias),"W","//numero de archivo",potencias.index(max(potencias))+1)
-print("minimo de potencias",min(potencias),"W","//numero de archivo",potencias.index(min(potencias))+1)
+print("POTENCIA MEDIA de todo=",np.mean(potencias),"+-",desviacion_estandar,"W")
+print("-----")
+print("MAXIMO de potencias",max(potencias),"W","//numero de archivo",round(numarchmax(potencias)))
+print("MINIMO de potencias",min(potencias),"W","//numero de archivo",round(numarchmin(potencias)))
+
 
